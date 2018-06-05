@@ -1,3 +1,17 @@
+// Copyright 2018 fatedier, fatedier@gmail.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -67,7 +81,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&logWay, "log_way", "", "console", "log way")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log_level", "", "info", "log level")
 	rootCmd.PersistentFlags().Int64VarP(&logMaxDays, "log_max_days", "", 3, "log_max_days")
-	rootCmd.PersistentFlags().StringVarP(&token, "token", "", "", "auth token")
+	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "auth token")
 	rootCmd.PersistentFlags().Int64VarP(&authTimeout, "auth_timeout", "", 900, "auth timeout")
 	rootCmd.PersistentFlags().StringVarP(&subDomainHost, "subdomain_host", "", "", "subdomain host")
 	rootCmd.PersistentFlags().Int64VarP(&maxPortsPerClient, "max_ports_per_client", "", 0, "max ports per client")
@@ -82,13 +96,17 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
+		var err error
 		if cfgFile != "" {
-			parseServerCommonCfg(CfgFileTypeIni, cfgFile)
+			err = parseServerCommonCfg(CfgFileTypeIni, cfgFile)
 		} else {
-			parseServerCommonCfg(CfgFileTypeCmd, "")
+			err = parseServerCommonCfg(CfgFileTypeCmd, "")
+		}
+		if err != nil {
+			return err
 		}
 
-		err := runServer()
+		err = runServer()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -113,7 +131,7 @@ func parseServerCommonCfg(fileType int, filePath string) (err error) {
 		return
 	}
 
-	g.GlbServerCfg.CfgFile = cfgFile
+	g.GlbServerCfg.CfgFile = filePath
 
 	err = g.GlbServerCfg.ServerCommonConf.Check()
 	if err != nil {
